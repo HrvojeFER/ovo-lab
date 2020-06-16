@@ -191,7 +191,7 @@ namespace raytracing
 
             // Zbrajam doprinose rekurzivnih poziva i
             // ispravljam ih da ne ponište ostale doprinose.
-            var recursionContribution = reflectionContribution;
+            var recursionContribution = reflectionContribution.add(refractionContribution);
             recursionContribution.correct();
             // Na kraju ih dodajem ostalim komponentama.
             colorContributions = colorContributions.add(recursionContribution);
