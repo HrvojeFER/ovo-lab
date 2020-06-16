@@ -1,0 +1,251 @@
+#VRML V2.0 utf8
+
+
+# svijet
+
+WorldInfo 
+{
+    title "Solar System"
+}
+
+Background 
+{
+	# crna
+    skyColor    [ 0.0 0.0 0.0 ]
+    groundColor [ 0.0 0.0 0.0 ]
+}
+
+
+# očište
+
+Viewpoint 
+{
+	# ptičja perspektiva
+    position 0.0 40.0 30.0
+	orientation 1.0 0.0 0.0 -0.9
+    
+	description "Entry view"
+}
+
+NavigationInfo 
+{
+    type [ "EXAMINE", "ANY" ]
+    headlight TRUE
+}
+
+
+
+# Sunčev sustav
+DEF SunSystem Transform
+{
+	children
+	[
+		# Sunce
+		DEF Sun Transform
+		{
+			children
+			[
+				DEF SunSphere Shape
+				{
+					appearance Appearance
+					{
+						# žuta
+						material Material
+						{
+							diffuseColor 0.84 0.86 0.042
+						}
+					}
+					
+					# radius Sunca po uputama
+					geometry Sphere 
+					{
+						radius 6.96
+					}
+				}
+			]
+		}
+		
+		# planeti Sunčevog sustava
+		DEF Planets Transform
+		{
+			children
+			[
+				# Zemljina orbita
+				DEF EarthOrbit Transform
+				{
+					children
+					[
+						# Zemlja i njen Mjesec
+						DEF EarthGroup Transform
+						{
+							# udaljenost Zemlje i Sunca po uputama
+							# odabrao Y os kao os rotacije, pa sam mogao pomaknuti u X ili Z smjeru
+							# X smjer mi je prvi pao na pamet
+							translation 14.96 0.0 0.0
+						
+							children
+							[
+								# Zemlja
+								DEF Earth Transform
+								{
+									children
+									[
+										DEF EarthSphere Shape
+										{
+											appearance Appearance
+											{
+												material Material
+												{	
+													# plava
+													diffuseColor 0.0 0.5 0.75
+												}
+											}
+											
+											geometry Sphere 
+											{
+												# radijus Zemlje po uputama
+												radius 0.63
+											}
+										}
+									]
+								}
+								
+								# Mjesečeva orbita
+								DEF MoonOrbit Transform
+								{
+									children 
+									[
+										# Mjesec i sve oko njega
+										DEF MoonGroup Transform
+										{
+											# udaljenost Zemlje i Mjeseca po uputama
+											# opet, odabrao sam X os pošto je Y os rotacije
+											translation 1.0 0.0 0.0
+											
+											children
+											[
+												# Mjesec
+												DEF Moon Transform
+												{
+													children
+													[
+														DEF MoonSphere Shape
+														{
+															appearance Appearance
+															{
+																material Material
+																{
+																	# siva po uputama
+																	diffuseColor 0.75 0.75 0.75
+																}
+															}
+															
+															geometry Sphere 
+															{
+																# radius Mjeseca po uputama
+																radius 0.17
+															}
+														}
+													]
+												}
+											]
+										}
+									]
+								}
+							]
+						}
+					]
+				}
+			]
+		}
+	]
+}
+
+
+
+# timer kruženja Zemlje oko Sunca
+DEF EarthOrbitTimer TimeSensor 
+{
+	loop TRUE
+	# 60 sekundi po uputama
+	cycleInterval 60.0
+}
+
+# interpolator za orbitu Zemlje
+DEF EarthOrbiter OrientationInterpolator 
+{
+	# ovo sam samo kopirao iz primjera za animiranu kocku
+	# kreće od 0 radijana, na pola je na pi radijana i završava na 2 * pi radijana
+	key [ 0, 0.5, 1 ]
+	keyValue [ 0 1 0 0, 0 1 0 3.141, 0 1 0 6.282 ]
+}
+
+# timer -> interpolator -> orbita Zemlje
+ROUTE EarthOrbitTimer.fraction_changed TO EarthOrbiter.set_fraction
+ROUTE EarthOrbiter.value_changed TO EarthOrbit.set_rotation
+
+
+# timer kruženja Mjeseca oko Zemlje
+DEF MoonOrbitTimer TimeSensor
+{
+	loop TRUE
+	# 4.61 sekundi po uputama
+	cycleInterval 4.61
+}
+
+# interpolator za orbitu Mjeseca
+DEF MoonOrbiter OrientationInterpolator 
+{
+	# kopirano
+	key [ 0, 0.5, 1 ]
+	keyValue [ 0 1 0 0, 0 1 0 3.141, 0 1 0 6.282 ]
+}
+
+# timer -> interpolator -> orbita Mjeseca
+ROUTE MoonOrbitTimer.fraction_changed TO MoonOrbiter.set_fraction
+ROUTE MoonOrbiter.value_changed TO MoonOrbit.set_rotation
+
+
+
+# i ovdje su opisane rotacije Zemlje i Sunca
+# nije po uputi, ali mislim da nije veliki problem ako ovo ostavim ovdje :)
+
+
+# timer rotacije Sunca
+DEF SunRotationTimer TimeSensor 
+{
+	loop TRUE
+	cycleInterval 4.1
+}
+
+# interpolator za rotaciju Sunca
+DEF SunRotator OrientationInterpolator 
+{
+	key [ 0, 0.5, 1 ]
+	keyValue [ 0 1 0 0, 0 1 0 3.141, 0 1 0 6.282 ]
+}
+
+# timer -> interpolator -> rotacija Sunca
+ROUTE SunRotationTimer.fraction_changed TO SunRotator.set_fraction
+ROUTE SunRotator.value_changed TO Sun.set_rotation
+
+
+# timer rotacije Zemlje
+DEF EarthRotationTimer TimeSensor 
+{
+	loop TRUE
+	# 0.164 sekundi po uputama
+	cycleInterval 0.164
+}
+
+# interpolator za rotaciju Zemlje
+DEF EarthRotator OrientationInterpolator 
+{
+	# kopirano
+	key [ 0, 0.5, 1 ]
+	keyValue [ 0 1 0 0, 0 1 0 3.141, 0 1 0 6.282 ]
+}
+
+# timer -> interpolator -> rotacija Zemlje
+ROUTE EarthRotationTimer.fraction_changed TO EarthRotator.set_fraction
+ROUTE EarthRotator.value_changed TO Earth.set_rotation

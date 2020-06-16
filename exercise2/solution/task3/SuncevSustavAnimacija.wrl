@@ -1,0 +1,226 @@
+#VRML V2.0 utf8
+
+
+# kod je isti kao za zadatak 2, osim dodanih tekstura.
+
+
+# svijet
+
+WorldInfo 
+{
+    title "Solar System"
+}
+
+Background 
+{
+    skyColor    [ 0.0 0.0 0.0 ]
+    groundColor [ 0.0 0.0 0.0 ]
+	
+	# teksture za bolji doživljaj Svemira :)
+	bottomUrl "stars.jpg"
+	topUrl "stars.jpg"
+	
+	backUrl "stars_milky_way.jpg"
+	frontUrl "stars_milky_way.jpg"
+	leftUrl "stars_milky_way.jpg"
+	rightUrl "stars_milky_way.jpg"
+}
+
+
+# očište
+
+Viewpoint 
+{
+    position 0.0 40.0 30.0
+	orientation 1.0 0.0 0.0 -0.9
+    
+	description "Entry view"
+}
+
+NavigationInfo 
+{
+    type [ "EXAMINE", "ANY" ]
+    headlight TRUE
+}
+
+
+
+# Sunčev sustav
+DEF SunSystem Transform
+{
+	children
+	[
+		# Sunce
+		DEF Sun Transform
+		{
+			children
+			[
+				DEF SunSphere Shape
+				{
+					appearance Appearance 
+					{
+						texture ImageTexture { url "sun.jpg" }
+					}
+					
+					geometry Sphere 
+					{
+						radius 6.96
+					}
+				}
+			]
+		}
+		
+		# planeti Sunčevog sustava
+		DEF Planets Transform
+		{
+			children
+			[
+				# Zemljina orbita
+				DEF EarthOrbit Transform
+				{
+					children
+					[
+						# Zemlja i njen Mjesec
+						DEF EarthGroup Transform
+						{
+							translation 14.96 0.0 0.0
+						
+							children
+							[
+								# Zemlja
+								DEF Earth Transform
+								{
+									children
+									[
+										DEF EarthSphere Shape
+										{	
+											appearance Appearance 
+											{
+												texture ImageTexture { url "earth_day.jpg" }
+											}
+											
+											geometry Sphere 
+											{
+												radius 0.63
+											}
+										}
+									]
+								}
+								
+								# Mjesečeva orbita
+								DEF MoonOrbit Transform
+								{
+									children 
+									[
+										# Mjesec i sve oko njega
+										DEF MoonGroup Transform
+										{
+											translation 1.0 0.0 0.0
+											
+											children
+											[
+												# Mjesec
+												DEF Moon Transform
+												{
+													children
+													[
+														DEF MoonSphere Shape
+														{
+															appearance Appearance
+															{
+																texture ImageTexture { url "moon.jpg" }
+															}
+															
+															geometry Sphere 
+															{
+																radius 0.17
+															}
+														}
+													]
+												}
+											]
+										}
+									]
+								}
+							]
+						}
+					]
+				}
+			]
+		}
+	]
+}
+
+
+
+# timer kruženja Zemlje oko Sunca
+DEF EarthOrbitTimer TimeSensor 
+{
+	loop TRUE
+	cycleInterval 60.0
+}
+
+# interpolator za orbitu Zemlje
+DEF EarthOrbiter OrientationInterpolator 
+{
+	key [ 0, 0.5, 1 ]
+	keyValue [ 0 1 0 0, 0 1 0 3.141, 0 1 0 6.282 ]
+}
+
+ROUTE EarthOrbitTimer.fraction_changed TO EarthOrbiter.set_fraction
+ROUTE EarthOrbiter.value_changed TO EarthOrbit.set_rotation
+
+
+# timer kruženja Mjeseca oko Zemlje
+DEF MoonOrbitTimer TimeSensor
+{
+	loop TRUE
+	cycleInterval 4.61
+}
+
+# interpolator za orbitu Mjeseca
+DEF MoonOrbiter OrientationInterpolator 
+{
+	key [ 0, 0.5, 1 ]
+	keyValue [ 0 1 0 0, 0 1 0 3.141, 0 1 0 6.282 ]
+}
+
+ROUTE MoonOrbitTimer.fraction_changed TO MoonOrbiter.set_fraction
+ROUTE MoonOrbiter.value_changed TO MoonOrbit.set_rotation
+
+
+
+# timer rotacije Sunca
+DEF SunRotationTimer TimeSensor 
+{
+	loop TRUE
+	cycleInterval 4.1
+}
+
+# interpolator za rotaciju Sunca
+DEF SunRotator OrientationInterpolator 
+{
+	key [ 0, 0.5, 1 ]
+	keyValue [ 0 1 0 0, 0 1 0 3.141, 0 1 0 6.282 ]
+}
+
+ROUTE SunRotationTimer.fraction_changed TO SunRotator.set_fraction
+ROUTE SunRotator.value_changed TO Sun.set_rotation
+
+
+# timer rotacije Zemlje
+DEF EarthRotationTimer TimeSensor 
+{
+	loop TRUE
+	cycleInterval 0.164
+}
+
+# interpolator za rotaciju Zemlje
+DEF EarthRotator OrientationInterpolator 
+{
+	key [ 0, 0.5, 1 ]
+	keyValue [ 0 1 0 0, 0 1 0 3.141, 0 1 0 6.282 ]
+}
+
+ROUTE EarthRotationTimer.fraction_changed TO EarthRotator.set_fraction
+ROUTE EarthRotator.value_changed TO Earth.set_rotation

@@ -8,6 +8,7 @@ WorldInfo
     title "Avion"
 }
 
+# boje se same objašnjavaju kada ih vidite :)
 Background 
 {
     skyColor    [ 0.1 0.2 0.7 ]
@@ -17,6 +18,7 @@ Background
 
 # očište
 
+# malo udaljeno da vidimo cijeli avion
 Viewpoint 
 {
     position 0.0 0.0 5.0
@@ -43,7 +45,8 @@ DEF Airplane Transform
 			[
 				# krila bez propelera
 				DEF WingsWithoutPropeller Transform
-				{
+				{	
+					# 0.15 u +X smjeru mi se činilo najbolje vizualno naspram trupa
 					translation 0.15 0.0 0.0
 				
 					children
@@ -51,15 +54,18 @@ DEF Airplane Transform
 						# desno krilo bez propelera
 						DEF RightWingWithoutPropeller Transform
 						{
+							# desno krilo treba pomaknuti malo prema trupu i rotirati u smjeru kazaljke na satu
+							# ako avion gledamo odozgo
 							translation 0.0 0.0 0.7
 							rotation 0.0 1.0 0.0 1.3
 
 						
 							children 
 							[
-								# krilo s inicijalima
+								# krilo s inicijalima, bez propelera
 								DEF WingInitials Transform
-								{
+								{	
+									# treba stanjiti Y os da izgleda kao krilo
 									scale 1.0 0.1 0.4
 									
 									children
@@ -82,6 +88,9 @@ DEF Airplane Transform
 						# lijevo krilo bez propelera
 						DEF LeftWingWithoutPropeller Transform
 						{
+							
+							# lijevo krilo treba pomaknuti malo prema trupu i rotirati u smjeru obrnutom od kazaljke na satu
+							# ako avion gledamo odozgo
 							translation 0.0 0.0 -0.7
 							rotation 0.0 1.0 0.0 -1.3
 
@@ -90,6 +99,7 @@ DEF Airplane Transform
 								# krilo bez propelera
 								DEF WingWithoutPropeller Transform
 								{
+									# treba stanjiti Y os da izgleda kao krilo.
 									scale 1.0 0.1 0.4
 									
 									children
@@ -101,6 +111,7 @@ DEF Airplane Transform
 											{
 												material Material 
 												{
+													# ciljao sam na sivo plavu boju jer mi je tako izgledalo najbolje
 													diffuseColor 0.7 0.8 1.0
 												}
 											}
@@ -114,40 +125,49 @@ DEF Airplane Transform
 					]
 				}
 				
+				# propeleri krila
 				DEF WingPropellers Transform
 				{
+					# ova translacija je najbolje vizualno izgledala - prema prednjoj strani krila i malo gore
 					translation 0.4 0.05 0.0
 				
 					children
 					[
+						# desni propeler
 						DEF RightPropeller Transform
 						{
+							# desni propeler ide na desnu stranu
 							translation 0.0 0.0 1.0
 							
 							children
 							[
+								# propeler
 								DEF Propeller Transform
 								{
+									# propeler je mali naspram krila
 									scale 0.3 0.3 0.3
 									
 									children
 									[
-										# baza propelera
+										# baza propelera - slično trupu aviona
 										DEF PropellerBase Transform
-										{
+										{	
 											scale 1.0 0.2 0.3
 											
 											children [ USE BaseSphere ]
 										}
 										
-										# krakovi propelera
+										# elise propelera
 										DEF PropellerBlades Transform
 										{
+											# elise su male naspram propelera
 											scale 0.5 0.5 0.5
+											# treba ih pomaknuti prema prednjoj strani propelera
 											translation 1.0 0.0 0.0
 											
 											children 
 											[ 
+												# elisa po Y osi
 												Transform
 												{
 													scale 0.15 1.4 0.15
@@ -155,6 +175,7 @@ DEF Airplane Transform
 													children [ USE BaseSphere ]
 												}
 												
+												# elisa po Z osi
 												Transform
 												{
 													scale 0.15 0.15 1.4
@@ -168,8 +189,10 @@ DEF Airplane Transform
 							]
 						}
 						
+						# lijevi propeler
 						DEF LeftPropeller Transform
 						{
+							# lijevi propeler ide na lijevu stranu
 							translation 0.0 0.0 -1.0
 							
 							children [ USE Propeller ]
@@ -185,9 +208,11 @@ DEF Airplane Transform
 		{	
 			children 
 			[
-				# baza tijela
+				# baza trupa - nije potrebno ovako, ali sam se naviknuo ovako pisati da 
+				# lakše kontroliram transformacije pa sam ovako napisao
 				DEF BodyBase Transform 
 				{
+					# trup je dugačak po Y osi
 					scale 1.9 0.3 0.4
 
 					children 
@@ -209,6 +234,7 @@ DEF Airplane Transform
 		# rep aviona
 		DEF Tail Transform 
 		{
+			# treba ga pomaknuti na kraj trupa i malo gore
 			translation -1.5 0.25 0.0
 
 			children 
@@ -216,6 +242,9 @@ DEF Airplane Transform
 				# baza repa
 				DEF TailBase Transform
 				{
+					# iskreno nisam više siguran zašto je ovdje po Z osi - nadam se da nije veliki problem
+					# rekao bih da ovo treba rotirati prema X osi, ali i ovo radi, a znamo da nešto što radi
+					# ne treba dirati :)
 					rotation 0.0 0.0 1.0 -0.9
 					scale 0.5 0.2 0.075
 					
@@ -225,6 +254,7 @@ DEF Airplane Transform
 				# vrh repa
 				DEF TailTop Transform
 				{
+					# vrh repa je mali i treba ga pomaknuti malo iza i malo gore
 					translation -0.35 0.33 0.0
 					scale 0.4 0.4 0.4
 				
@@ -233,6 +263,7 @@ DEF Airplane Transform
 						# baza vrha repa
 						DEF TailTopBase Transform
 						{
+							# naspram baze, vrh je velik i treba ga pomaknuti malo unaprijed
 							translation 0.5 0.0 0.0
 							scale 3.0 3.0 3.0
 							
@@ -244,6 +275,7 @@ DEF Airplane Transform
 						# mogao bih to sve prekrojiti da ih nema, ali nadam se da je ovo dovoljno dobro :)
 						DEF TailTopWings Transform
 						{
+							# ovako mi je najbolje vizualno izgledalo
 							scale 0.7 0.8 1.0
 							
 							children [ USE WingsWithoutPropeller ]
