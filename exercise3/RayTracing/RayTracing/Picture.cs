@@ -64,5 +64,17 @@ namespace raytracing
             }
          }
       }
-   }
+
+        private void InitializeComponent()
+        {
+            this.SuspendLayout();
+            // 
+            // Picture
+            // 
+            this.ClientSize = new System.Drawing.Size(200, 200);
+            this.Name = "Picture";
+            this.ResumeLayout(false);
+
+        }
+    }
 }

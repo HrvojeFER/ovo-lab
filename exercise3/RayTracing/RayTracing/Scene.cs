@@ -130,22 +130,31 @@ namespace raytracing
                 // Za prirodnije svjetlo normaliziram.
                 intersectionToLightSourceVector.normalize();
 
+                // Projekcija vektora ka svjetlu na normalu presjeka nam treba za izračun difuzne i
+                // spekularne komponente.
+                var lightNormalProjection = 
+                    intersectionToLightSourceVector.dotProduct(intersectionNormal);
+
                 // Difuzna komponenta.
                 // Izračun difuzne komponente.
                 var diffuseComponent = light
                     .multiple(intersectionSphere.getKd())
-                    .multiple(intersectionToLightSourceVector.dotProduct(intersectionNormal));
-                // Treba ispraviti difuznu komponentu da ne poništava ambijentnu kad bude pretamna.
+                    .multiple(lightNormalProjection);
+                // Treba ispraviti difuznu komponentu da ne poništava ambijentnu kad bude prejaka.
                 diffuseComponent.correct();
 
                 // Spekularna komponenta.
-                // Za spekularnu komponentu mi treba zraka od izvora svjetla odbijena od presjeka.
-                var reflectedLightRay = intersectionToLightSourceVector
-                    .multiple(-1).getReflectedVector(intersectionNormal);
-                // Za prirodnije osvjetljenje normaliziram.
-                reflectedLightRay.normalize();
-                // Trebam izračunati projekciju odbijene zrake na smjer praćene zrake.
-                var reflectionProjection = reflectedLightRay.dotProduct(
+                // Prvo trebam izračunati projekciju izvora na normalu presjeka.
+                var lightProjection = intersectionNormal.multiple(lightNormalProjection);
+
+                // Za spekularnu komponentu mi treba negativna zraka od izvora svjetla odbijena
+                // od presjeka. Nije potrabna normalizacija, jer bi negativni reflektirani kut
+                // trebao biti iste duljine kao i upadni kut, kojeg smo već normalizirali.
+                var negativeLightReflectionVector = intersectionToLightSourceVector
+                    .add(lightProjection).add(lightProjection);
+                negativeLightReflectionVector.normalize();
+                // Trebam izračunati projekciju negativne odbijene zrake na smjer obrnut praćenoj zraci.
+                var reflectionProjection = negativeLightReflectionVector.dotProduct(
                     ray.getDirection());
 
                 // Izračun spekularne komponente.
@@ -169,7 +178,7 @@ namespace raytracing
 
             // Računanje doprinosa reflektiranih i refraktiranih zraka.
             // Da bih dobio doprinose reflektirane i refraktirane zrake trebam ih pratiti i
-            // povećati dubinu za jedan.
+            // povećati dubinu za jedan. Njihove doprinose ne treba korigirati jer su već korigirani.
             // Smjer reflektirane zrake.
             var reflectedRayDirection = ray.getDirection()
                 .getReflectedVector(intersectionNormal);
@@ -192,7 +201,6 @@ namespace raytracing
             // Zbrajam doprinose rekurzivnih poziva i
             // ispravljam ih da ne ponište ostale doprinose.
             var recursionContribution = reflectionContribution.add(refractionContribution);
-            recursionContribution.correct();
             // Na kraju ih dodajem ostalim komponentama.
             colorContributions = colorContributions.add(recursionContribution);
 

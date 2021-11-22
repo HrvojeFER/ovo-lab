@@ -34,7 +34,7 @@
 	<polozaj => -1,-1,-4:
 	<radius => 1:
 	<doprinosi zraka>
-		<udio reflektirane zrake => 1:
+		<udio reflektirane zrake => 0.2:
 		<udio refraktirane zrake => 0:
 	<koeficijenti materijala>
 		<ambientna komponenta ka=>0.2, 0.2, 1:

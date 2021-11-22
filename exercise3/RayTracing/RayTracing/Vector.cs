@@ -67,7 +67,7 @@ namespace raytracing
         /// </summary>
         public void normalize ()
         {
-            double length = Math.Sqrt(Math.Pow(x, 2) + Math.Pow(y, 2) + Math.Pow(z, 2));
+            double length = this.getLength();
             x /= length;
             y /= length;
             z /= length;
@@ -79,7 +79,7 @@ namespace raytracing
         /// <returns>duzina vektora</returns>
         public double getLength ()
         {
-            return Math.Sqrt(Math.Pow(x, 2) + Math.Pow(y, 2) + Math.Pow(z, 2));
+            return Math.Sqrt(x * x + y * y + z * z);
         }
 
         /// <summary>
@@ -89,7 +89,7 @@ namespace raytracing
         /// <returns>vektor koji je jednak razlici</returns>
         public Vector sub ( Vector v )
         {
-            return new Vector(x - v.getX(), y - v.getY(), z - v.getZ());
+            return new Vector(x - v.x, y - v.y, z - v.z);
         }
 
         /// <summary>
@@ -99,7 +99,7 @@ namespace raytracing
         /// <returns>vektor koji je jednak zbroju</returns>
         public Vector add ( Vector v )
         {
-            return new Vector(x + v.getX(), y + v.getY(), z + v.getZ());
+            return new Vector(x + v.x, y + v.y, z + v.z);
         }
 
         /// <summary>
@@ -119,7 +119,7 @@ namespace raytracing
         /// <returns>skalarni produkt dva vektora</returns>
         public double dotProduct ( Vector v )
         {
-            return ((x * v.getX()) + (y * v.getY()) + (z * v.getZ()));
+            return x * v.x + y * v.y + z * v.z;
         }
 
         /// <summary>
@@ -129,10 +129,10 @@ namespace raytracing
         /// <returns>vektorski produkt dva vektora</returns>
         public Vector crossProduct ( Vector v )
         {
-            double tx = (y * v.getZ()) - (v.getY() * z);
-            double ty = (z * v.getX()) - (v.getZ() * x);
-            double tz = (x * v.getY()) - (v.getX() * y);
-            return new Vector(tx, ty, tz);
+            return new Vector(
+                y * v.z - v.y * z, 
+                z * v.x - v.z * x, 
+                x * v.y - v.x * y);
         }
 
         /// <summary>
@@ -149,34 +149,60 @@ namespace raytracing
         /// <summary>
         /// Vraca reflektirani vektor s obzirom na normalu.
         /// </summary>
-        /// <param name="normal">normala</param>
+        /// <param name="normal">normala jedinične dužine</param>
         /// <returns>reflektirani vektor</returns>
         public Vector getReflectedVector ( Vector normal )
         {
             // Prvo trebam izračunati projekciju na normalu.
-            var normalProjection = normal.multiple(this.dotProduct(normal));
+            var normalProjection = normal.multiple(-2 * this.dotProduct(normal));
 
             // Nakon toga, računam reflektirani vektor.
-            // Koristim operaciju zbrajanja umjesto množenja s 2 jer je zbrajanje s float-ovima brže.
-            return this.add(normalProjection).add(normalProjection);
+            return this.add(normalProjection);
         }
 
         /// <summary>
         /// Vraca refraktirani vektor s obzirom na normalu i indekse refrakcije
-        /// sredstva upadnog vektora i refraktiranog vektora.
+        /// sredstva upadnog vektora i refraktiranog vektora. Ovaj vektor mora biti jedinične dužine.
         /// </summary>
         /// <param name="normal">normala</param>
         /// <param name="nI">index loma sredstva</param>
         /// <returns>refraktirani vektor</returns>
         public Vector getRefractedVector ( Vector normal, double nI )
         {
-            var normalProjection = normal.multiple(- this.dotProduct(normal));
+            // Formula dobivena postupkom opisanim Bram de Greve sa Stanford-a
+
+            // Prvo računam produkt s normalom
+            var normalDotProduct = this.dotProduct(normal);
+            
+            // Znači da idemo iz materijala u vanjski svijet.
+            if (normalDotProduct > 0) nI = 1 / nI;
+            else normalDotProduct = -normalDotProduct;
+
+            // Trebaju mi odvojene komponente ovog vektora.
+            var normalProjection = normal.multiple(normalDotProduct);
             var surfaceProjection = this.sub(normalProjection);
 
-            nI = 1 + (nI - 1) / 3;
-            surfaceProjection = surfaceProjection.multiple(1 / nI);
+            // Kosinus upadnog kuta je jednak duljini projekcije na površinu.
+            var angleOfIncidenceCosine = surfaceProjection.getLength();
 
-            return normalProjection.add(surfaceProjection);
+            // Može se nekada dogoditi radi operacija s float-ovima
+            if (angleOfIncidenceCosine > 1.0) angleOfIncidenceCosine = 1.0;
+
+            // Kvadrat sinusa izlaznog kuta je, po Snellovoj formuli, jednak kvadratu umnoška
+            // indeksa loma i sinusa upadnog kuta, pa možemo još samo napraviti supstituciju
+            // za kvadrat upadnog kuta.
+            var outputAngleSineSquared = nI * nI * 
+                                         (1.0 - angleOfIncidenceCosine * angleOfIncidenceCosine);
+
+            // Može se nekada dogoditi kada je nI prevelik.
+            if (outputAngleSineSquared > 1.0) outputAngleSineSquared = 1.0;
+
+            // Koeficijent kojim ćemo pomnožiti normalu.
+            var normalCoefficient = nI * angleOfIncidenceCosine -
+                                    Math.Sqrt(1 - outputAngleSineSquared);
+
+            // Konačan rezultat.
+            return this.multiple(nI).add(normal.multiple(normalCoefficient));
         }
     }
 }
